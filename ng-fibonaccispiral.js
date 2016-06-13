@@ -5,7 +5,7 @@ angular.module('fibonacci',[])
 			name: 'fibonacci',
 			scope: {},
 			restrict: 'A', // E = Element, A = Attribute, C = Class, M = Comment
-			template: '<canvas width="1215" height="750"></canvas>',
+			template: '<canvas></canvas>',
 			replace: true,
 			link: function($scope, iElm, iAttrs, controller) {
 				var r = 0, g = 0, b = 0;
