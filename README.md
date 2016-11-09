@@ -11,5 +11,5 @@ docker build -t angular-fibonaccispiral git@github.com:astrobass/angular-fibonac
 
 Run the web server
 ```
-docker run -d -p 8080:80 --name webserver angular-fibonaccispiral
+docker run -d -p 8080:80 --name fibonaccispiral angular-fibonaccispiral
 ```
