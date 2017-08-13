@@ -21,7 +21,7 @@
   },
   "scripts": {
     "test": "karma start karma.conf.js",
-    "codecov": "codecov --token=48a3125e-4171-4aec-9311-6447ceb049e3"
+    "codecov": "codecov --clear --token=48a3125e-4171-4aec-9311-6447ceb049e3"
   },
   "repository": {
     "type": "git",
