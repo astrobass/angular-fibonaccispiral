@@ -1,6 +1,6 @@
 # ng-fibonaccispiral
 
-[![Stories in Ready](https://badge.waffle.io/astrobass/ng-fibonaccispiral.png?label=ready&title=Ready)](http://waffle.io/astrobass/ng-fibonaccispiral)
+[![Stories in Ready](https://badge.waffle.io/astrobass/ng-fibonaccispiral.png?label=ready&title=Ready)](http://waffle.io/astrobass/ng-fibonaccispiral) [![codecov](https://codecov.io/gh/astrobass/angular-fibonaccispiral/branch/master/graph/badge.svg)](https://codecov.io/gh/astrobass/angular-fibonaccispiral)
 
 ## To run in Docker on port 8080
 

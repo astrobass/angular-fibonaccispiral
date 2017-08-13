@@ -1,0 +1,4 @@
+package-lock.json
+coverage/
+bower_components/
+node_modules/

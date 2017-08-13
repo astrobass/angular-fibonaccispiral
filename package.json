@@ -1,0 +1,32 @@
+{
+  "name": "angular-fibonaccispiral",
+  "version": "1.0.0",
+  "description": "[![Stories in Ready](https://badge.waffle.io/astrobass/ng-fibonaccispiral.png?label=ready&title=Ready)](http://waffle.io/astrobass/ng-fibonaccispiral)",
+  "main": "angular-fibonaccispiral.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "angular": "^1.6.5",
+    "angular-mocks": "^1.6.5",
+    "bower": "^1.8.0",
+    "istanbul": "^0.4.5",
+    "jasmine": "^2.7.0",
+    "jasmine-core": "^2.7.0",
+    "mocha": "^3.5.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "istanbul cover karma start && codecov --token=48a3125e-4171-4aec-9311-6447ceb049e3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astrobass/angular-fibonaccispiral.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/astrobass/angular-fibonaccispiral/issues"
+  },
+  "homepage": "https://github.com/astrobass/angular-fibonaccispiral#readme"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "angular-fibonaccispiral",
+  "description-ignore": "[![Stories in Ready](https://badge.waffle.io/astrobass/ng-fibonaccispiral.png?label=ready&title=Ready)](http://waffle.io/astrobass/ng-fibonaccispiral)",
+  "main": "app/fibSpiral.js",
+  "authors": [
+    "Corey Wendling <github@wtree.com>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/astrobass/angular-fibonaccispiral",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.6.5",
+    "angular-mocks": "^1.6.5"
+  }
+}

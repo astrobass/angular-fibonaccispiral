@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.3/jasmine.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.3/jasmine.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.3/jasmine-html.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.3/boot.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-mocks.js"></script>
+    <script type="text/javascript" src="../app/fibSpiral.js"></script>
+  </head>
+  <body>
+  </body>
+  <script type="text/javascript">
+
+  describe("Unit testing fibonacci spiral", function() {
+    var element;
+    var compile;
+    var directiveElement;
+    var outerScope;
+    var innerScope;
+
+    beforeEach(function() {
+      module('fibonacci');
+
+      inject(function( $compile, $rootScope ) {
+        compile = $compile;
+        outerScope = $rootScope.$new();
+      });
+
+      directiveElement = getCompiledElement();
+    });
+
+    function getCompiledElement() {
+      element = angular.element('<div><div fibonacci></div></div>');
+      var compiledElement = compile(element)(outerScope);
+      innerScope = element.isolateScope();
+      outerScope.$digest();
+      return compiledElement;
+    }
+
+    it("should be defined", function() {
+      expect(element[0]).toBeDefined();
+    });
+
+    it("should match a canvas tag", function() {
+      expect(element[0].innerHTML).toMatch(/<canvas.*<\/canvas>/);
+    });
+
+  });
+
+  </script>
+</html>
