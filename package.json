@@ -8,13 +8,14 @@
     "angular": "^1.6.5"
   },
   "devDependencies": {
-    "bower": "^1.8.0",
     "angular-mocks": "^1.6.5",
+    "bower": "^1.8.0",
     "codecov": "^2.3.0",
     "jasmine": "^2.7.0",
     "jasmine-core": "^2.7.0",
     "karma": "^1.7.0",
     "karma-chrome-launcher": "^2.2.0",
+    "karma-cli": "^1.0.1",
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "^1.1.0"
   },
