@@ -7,15 +7,17 @@
     "test": "test"
   },
   "dependencies": {
-    "angular": "^1.6.5",
-    "angular-mocks": "^1.6.5",
+    "angular": "^1.6.5"
+  },
+  "devDependencies": {
     "bower": "^1.8.0",
-    "istanbul": "^0.4.5",
+    "angular-mocks": "^1.6.5",
     "jasmine": "^2.7.0",
     "jasmine-core": "^2.7.0",
-    "mocha": "^3.5.0"
+    "karma": "^1.7.0",
+    "karma-coverage": "^1.1.1",
+    "istanbul": "^0.4.5"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "istanbul cover karma start && codecov --token=48a3125e-4171-4aec-9311-6447ceb049e3"
   },
