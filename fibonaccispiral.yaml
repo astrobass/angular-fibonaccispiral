@@ -36,3 +36,4 @@ spec:
     spec:
       containers:
       - name: fibonaccispiral
+        image: gcr.io/examples-216003/github-astrobass-angular-fibonaccispiral
