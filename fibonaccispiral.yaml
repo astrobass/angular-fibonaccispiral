@@ -35,5 +35,4 @@ spec:
         tier: ui
     spec:
       containers:
-      - image: gcr.io/angular-fibonaccispiral
-        name: fibonaccispiral
+      - name: fibonaccispiral
