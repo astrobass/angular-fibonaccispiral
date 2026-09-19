@@ -1,6 +1,6 @@
 {
   "name": "angular-fibonaccispiral",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "An AngularJS directive that draws a Fibonacci (golden) spiral on a canvas.",
   "main": "app/fibSpiral.js",
   "dependencies": {
@@ -20,6 +20,7 @@
   },
   "scripts": {
     "lint": "eslint .",
+    "check:test-page": "node scripts/check-test-page.js",
     "test": "karma start karma.conf.js"
   },
   "repository": {
@@ -28,6 +29,9 @@
   },
   "author": "Corey Wendling <github@wtree.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "bugs": {
     "url": "https://github.com/astrobass/angular-fibonaccispiral/issues"
   },
