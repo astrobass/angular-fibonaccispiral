@@ -347,51 +347,27 @@ describe('fibonacci spiral directive', function() {
     // Equal margins on opposing sides.
     expect(left).toBeCloseTo(400 - right, 6);
     expect(top).toBeCloseTo(400 - bottom, 6);
-    // A square canvas leaves space above and below; at the sides only the
-    // inset that keeps the spiral stroke inside the canvas.
-    expect(left).toBeCloseTo(1, 6);
-    expect(top).toBeGreaterThan(1);
+    // A square canvas leaves space above and below, and none at the sides:
+    // the tiling fills the width, and the stroke is an overlay on top of it
+    // rather than something the geometry makes room for.
+    expect(left).toBeCloseTo(0, 6);
+    expect(top).toBeGreaterThan(0);
   });
 
-  it('leaves room for the spiral stroke at the canvas edge', function() {
-    // The stroke is centred on the path, so half its width falls outside the
-    // tiling. Without an inset the outermost arc is clipped by the canvas.
-    var HALF_STROKE = 1;
+  it('fills the canvas rather than insetting for the stroke', function() {
+    // The spiral is stroked over the finished tiling, so the tiles are not
+    // shrunk to make room for it: the figure reaches the canvas edge on
+    // whichever axis the inscribed golden rectangle is constrained by.
+    forEachAspect(function(tiles, size) {
+      var left = Math.min.apply(null, tiles.map(function(t) { return t.x; }));
+      var top = Math.min.apply(null, tiles.map(function(t) { return t.y; }));
+      var right = Math.max.apply(null, tiles.map(function(t) { return t.x + t.w; }));
+      var bottom = Math.max.apply(null, tiles.map(function(t) { return t.y + t.h; }));
 
-    [[400, 400], [400, 247]].forEach(function(size) {
-      calls = [];
-      render(size[0], size[1]);
+      var fillsWidth = left < 0.5 && right > size[0] - 0.5;
+      var fillsHeight = top < 0.5 && bottom > size[1] - 0.5;
 
-      rects().forEach(function(rect) {
-        expect(rect.x).not.toBeLessThan(HALF_STROKE);
-        expect(rect.y).not.toBeLessThan(HALF_STROKE);
-        expect(rect.x + rect.w).not.toBeGreaterThan(size[0] - HALF_STROKE);
-        expect(rect.y + rect.h).not.toBeGreaterThan(size[1] - HALF_STROKE);
-      });
-    });
-  });
-
-  it('keeps the whole stroke width inside the canvas', function() {
-    // The rect check above covers the tiles; the arcs reach the tile
-    // boundaries, so check them explicitly. Each arc spans exactly one
-    // quadrant, where cos and sin are both monotonic, so its extremes are its
-    // two endpoints -- not the full circle's bounding box. A stroke is centred
-    // on its path, so the endpoints plus half the stroke must still fit.
-    var HALF_STROKE = 1;
-    var EPSILON = 1e-9;
-
-    [[400, 400], [400, 247], [200, 200]].forEach(function(size) {
-      calls = [];
-      render(size[0], size[1]);
-
-      arcs().forEach(function(arc) {
-        [arcStart(arc), arcEnd(arc)].forEach(function(point) {
-          expect(point.x - HALF_STROKE).not.toBeLessThan(-EPSILON);
-          expect(point.y - HALF_STROKE).not.toBeLessThan(-EPSILON);
-          expect(point.x + HALF_STROKE).not.toBeGreaterThan(size[0] + EPSILON);
-          expect(point.y + HALF_STROKE).not.toBeGreaterThan(size[1] + EPSILON);
-        });
-      });
+      expect(fillsWidth || fillsHeight).toBe(true);
     });
   });
 
