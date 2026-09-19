@@ -1,12 +1,18 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fibonacci Spiral</title>
   </head>
   <body ng-app="myApp">
-    <div fibonacci width="200" height="200"></div>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
-    <script type="text/javascript" src="fibSpiral.js"></script>
-    <script type="text/javascript">
-      var app = angular.module('myApp', ['fibonacci']);
+    <div fibonacci width="400" height="400"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"
+            integrity="sha384-quGekMf1ic6tIOn1GgLl0Pzra4ZkFyTcaDW3hZRjORqPQe3HnTKGl+lNPpuh7Lwv"
+            crossorigin="anonymous"></script>
+    <script src="fibSpiral.js"></script>
+    <script>
+      angular.module('myApp', ['fibonacci']);
     </script>
   </body>
 </html>
