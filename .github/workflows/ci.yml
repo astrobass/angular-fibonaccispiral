@@ -24,6 +24,9 @@ jobs:
       # lockfile and manifest disagree.
       - run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
       # Karma launches ChromeHeadlessNoSandbox; the runner ships Chrome, and
       # CHROME_BIN tells karma-chrome-launcher where to find it.
       - name: Run tests
