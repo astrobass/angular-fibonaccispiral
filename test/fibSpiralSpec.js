@@ -9,9 +9,16 @@ describe('fibonacci spiral directive', function() {
   function recordingContext() {
     var ctx = {
       fillStyle: null,
+      strokeStyle: null,
+      lineWidth: null,
       fillRect: function(x, y, w, h) {
         calls.push({ op: 'fillRect', x: x, y: y, w: w, h: h, fillStyle: ctx.fillStyle });
-      }
+      },
+      beginPath: function() { calls.push({ op: 'beginPath' }); },
+      arc: function(x, y, r, start, end) {
+        calls.push({ op: 'arc', x: x, y: y, r: r, start: start, end: end });
+      },
+      stroke: function() { calls.push({ op: 'stroke', strokeStyle: ctx.strokeStyle }); }
     };
     return ctx;
   }
@@ -46,6 +53,19 @@ describe('fibonacci spiral directive', function() {
 
   function rects() {
     return calls.filter(function(call) { return call.op === 'fillRect'; });
+  }
+
+  function arcs() {
+    return calls.filter(function(call) { return call.op === 'arc'; });
+  }
+
+  // Where an arc begins and ends, in canvas coordinates.
+  function arcStart(arc) {
+    return { x: arc.x + arc.r * Math.cos(arc.start), y: arc.y + arc.r * Math.sin(arc.start) };
+  }
+
+  function arcEnd(arc) {
+    return { x: arc.x + arc.r * Math.cos(arc.end), y: arc.y + arc.r * Math.sin(arc.end) };
   }
 
   it('replaces the element with a canvas of the requested size', function() {
@@ -129,6 +149,46 @@ describe('fibonacci spiral directive', function() {
     outerScope.$digest();
 
     expect(rects().length).toBe(8);
+  });
+
+  it('draws one quarter arc per square', function() {
+    render(200, 200);
+    expect(arcs().length).toBe(rects().length);
+
+    arcs().forEach(function(arc) {
+      expect(arc.end - arc.start).toBeCloseTo(Math.PI / 2, 10);
+    });
+  });
+
+  it('joins the arcs into one continuous spiral', function() {
+    render(200, 200);
+    var drawn = arcs();
+
+    for (var i = 1; i < drawn.length; i++) {
+      var previous = arcEnd(drawn[i - 1]);
+      var current = arcStart(drawn[i]);
+
+      expect(current.x).toBeCloseTo(previous.x, 10);
+      expect(current.y).toBeCloseTo(previous.y, 10);
+    }
+  });
+
+  it('inscribes each arc in the square it belongs to', function() {
+    render(200, 200);
+    var squares = rects();
+
+    arcs().forEach(function(arc, i) {
+      // Radius equals the side of the square removed at that step.
+      expect(arc.r).toBeCloseTo(Math.min(squares[i].w, squares[i].h), 10);
+    });
+  });
+
+  it('strokes the spiral exactly once', function() {
+    render(200, 200);
+    var strokes = calls.filter(function(call) { return call.op === 'stroke'; });
+
+    expect(strokes.length).toBe(1);
+    expect(calls[0].op).toBe('beginPath');
   });
 
   it('uses colour channels that are within range', function() {

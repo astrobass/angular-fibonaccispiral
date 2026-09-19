@@ -31,6 +31,7 @@ angular.module('fibonacci',[])
 				// canvas size rather than by a hardcoded iteration count. The
 				// optional `depth` attribute caps the number of turns on top of that.
 				var MIN_TILE = 1;
+				var QUARTER = Math.PI / 2;
 				var maxTurns = parseInt(iAttrs.depth, 10);
 				if (!(maxTurns > 0)) {
 					maxTurns = Infinity;
@@ -43,6 +44,14 @@ angular.module('fibonacci',[])
 					rgb[turn % 3] = Math.min(255, (step + 1) * 60);
 					return "rgb(" + rgb.join(",") + ")";
 				}
+				// The spiral is one continuous path of quarter arcs, each inscribed
+				// in the square just removed. Every arc starts where the previous one
+				// ended, so the sweep advances a quarter turn per square, beginning at
+				// PI (the left edge). fillRect does not disturb the current path, so
+				// the arcs can accumulate while the squares are being filled.
+				ctx.beginPath();
+				var angle = Math.PI;
+
 				for (var i = 0; i < maxTurns; i++) {
 					// Remove a square from the left edge, then the top, then the
 					// right, then the bottom -- one full turn of the spiral. Each
@@ -53,25 +62,37 @@ angular.module('fibonacci',[])
 					ctx.fillStyle = getColor(i, 0);
 					ctx.fillRect(xl, yt, newWidth, yb - yt);
 					xl = xl + newWidth;
+					ctx.arc(xl, yb, newWidth, angle, angle + QUARTER);
+					angle += QUARTER;
 
 					newHeight = INV_PHI * (yb - yt);
 					if (newHeight < MIN_TILE) { break; }
 					ctx.fillStyle = getColor(i, 1);
 					ctx.fillRect(xl, yt, xr - xl, newHeight);
 					yt = yt + newHeight;
+					ctx.arc(xl, yt, newHeight, angle, angle + QUARTER);
+					angle += QUARTER;
 
 					newWidth = INV_PHI * (xr - xl);
 					if (newWidth < MIN_TILE) { break; }
 					ctx.fillStyle = getColor(i, 2);
 					ctx.fillRect(xr - newWidth, yt, newWidth, yb - yt);
 					xr = xr - newWidth;
+					ctx.arc(xr, yt, newWidth, angle, angle + QUARTER);
+					angle += QUARTER;
 
 					newHeight = INV_PHI * (yb - yt);
 					if (newHeight < MIN_TILE) { break; }
 					ctx.fillStyle = getColor(i, 3);
 					ctx.fillRect(xl, yb - newHeight, xr - xl, newHeight);
 					yb = yb - newHeight;
+					ctx.arc(xr, yb, newHeight, angle, angle + QUARTER);
+					angle += QUARTER;
 				}
+
+				ctx.strokeStyle = 'rgb(255,255,255)';
+				ctx.lineWidth = 2;
+				ctx.stroke();
 			}
 		};
 	});
