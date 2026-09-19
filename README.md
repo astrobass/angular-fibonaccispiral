@@ -40,6 +40,25 @@ angular.module('myApp', ['fibonacci']);
 
 All three are observed, so the figure is redrawn if they change.
 
+### Zooming
+
+The figure zooms without limit: **scroll**, **pinch**, or focus it and press
+**+** / **-**. The canvas is keyboard-reachable, so the zoom is not
+mouse-only.
+
+Zooming descends into the spiral rather than magnifying it -- tiles too small
+to draw at one level become visible at the next, and the point the squares
+converge on stays pinned on screen.
+
+It really is unbounded. Removing four squares reproduces the tiling scaled by
+`1/phi^4` about that convergence point, and the palette repeats every eight, so
+the image at any zoom `z` and at `z * phi^8` is identical. The zoom is reduced
+into that one period before drawing, which means the coordinates never leave a
+range doubles represent exactly and the work stays constant -- around 12 to 19
+tiles per frame at any depth. A naive implementation that kept subdividing
+would lose precision somewhere past a zoom of `10^15`; this one is still exact
+at `10^30`.
+
 ### Sizing
 
 Squares only come out square when the rectangle being subdivided is itself a

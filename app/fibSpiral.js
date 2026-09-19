@@ -13,13 +13,27 @@
 	var DEFAULT_HEIGHT = 150;
 	// A canvas has no text of its own, so assistive technology announces
 	// nothing unless it is given a role and a name.
-	var LABEL = 'A Fibonacci spiral: nested golden-ratio squares, each with a quarter arc inscribed.';
+	var LABEL = 'A Fibonacci spiral: nested golden-ratio squares, each with a quarter arc inscribed. ' +
+		'Scroll, pinch, or press plus and minus to zoom in without limit.';
+	// One wheel notch, and one press of + or -.
+	var WHEEL_STEP = 1.0015;
+	var KEY_STEP = 1.2;
 	// The spiral is an overlay stroked on top of the finished tiling, so its
 	// width does not enter the geometry: the tiles fill the canvas and the
 	// line is drawn over them. One CSS pixel is the thinnest the curve reads
 	// as a drawn line; below a device pixel a stroke stops getting thinner
 	// and only gets fainter.
 	var LINE_WIDTH = 1;
+	// Removing four squares reproduces the tiling scaled by phi^-4 about the
+	// point the nested rectangles converge on, and the palette repeats every
+	// eight. So zooming in by phi^8 lands on a pixel-identical image, and the
+	// zoom can be reduced into one period before drawing: the viewer descends
+	// forever while the renderer never leaves a range doubles can represent.
+	var PHI = 1 / INV_PHI;
+	var ZOOM_PERIOD = Math.pow(PHI, 8);
+	// Where the subdivision converges, as a fraction along both sides of the
+	// golden rectangle. Iterating the subdivision agrees with this to 1e-12.
+	var EYE = (1 + 1 / Math.sqrt(5)) / 2;
 
 	// A validated categorical order: every adjacent pair clears the
 	// colour-vision-deficiency and normal-vision separation gates (worst
@@ -54,7 +68,15 @@
 		return { width: width, height: width * INV_PHI };
 	}
 
-	function draw(ctx, width, height, maxTurns) {
+	// Reduce a zoom factor into [1, phi^8). The image at `zoom` and at
+	// `zoom * phi^8` is identical, so this is exact, not an approximation.
+	function wrapZoom(zoom) {
+		while (zoom >= ZOOM_PERIOD) { zoom /= ZOOM_PERIOD; }
+		while (zoom < 1) { zoom *= ZOOM_PERIOD; }
+		return zoom;
+	}
+
+	function draw(ctx, width, height, maxTurns, ratio, zoom) {
 		var rect = goldenRect(width, height);
 		// The tiling only fills a golden rectangle, so on a canvas of any other
 		// aspect ratio there is space left over. Centre the figure in it rather
@@ -70,8 +92,30 @@
 		// PI (the left edge). fillRect does not disturb the current path, so
 		// the arcs can accumulate while the squares are being filled.
 		var angle = Math.PI;
+		// The point everything converges on, and the anchor the zoom pivots
+		// about, so it stays put on screen however far in the viewer goes.
+		var eyeX = offsetX + rect.width * EYE;
+		var eyeY = offsetY + rect.height * EYE;
+		// A tile is worth drawing while it still covers a pixel once scaled;
+		// the cutoff therefore moves with the zoom, which is what makes
+		// detail keep appearing rather than the figure merely getting bigger.
+		var minTile = MIN_TILE / zoom;
 
-		ctx.clearRect(0, 0, width, height);
+		// Device pixels and zoom in one transform: scale about the eye, then
+		// scale again for the display. Tiles larger than the canvas are simply
+		// clipped, so the loop can always start from the first one.
+		ctx.setTransform(
+			ratio * zoom, 0,
+			0, ratio * zoom,
+			ratio * eyeX * (1 - zoom),
+			ratio * eyeY * (1 - zoom)
+		);
+		// clearRect honours the transform, so clear in the space the figure is
+		// drawn in -- the canvas mapped back through the zoom.
+		ctx.clearRect(
+			eyeX - (eyeX / zoom) - width, eyeY - (eyeY / zoom) - height,
+			(width + eyeX) * 2 / zoom + width * 2, (height + eyeY) * 2 / zoom + height * 2
+		);
 		ctx.beginPath();
 
 		for (var i = 0; i < maxTurns; i++) {
@@ -80,7 +124,7 @@
 			// 1/phi of the side it is taken from, so they shrink fast; stop as
 			// soon as one would be too small to see.
 			newWidth = INV_PHI * (xr - xl);
-			if (newWidth < MIN_TILE) { break; }
+			if (newWidth < minTile) { break; }
 			ctx.fillStyle = getColor(i, 0);
 			ctx.fillRect(xl, yt, newWidth, yb - yt);
 			xl = xl + newWidth;
@@ -88,7 +132,7 @@
 			angle += QUARTER;
 
 			newHeight = INV_PHI * (yb - yt);
-			if (newHeight < MIN_TILE) { break; }
+			if (newHeight < minTile) { break; }
 			ctx.fillStyle = getColor(i, 1);
 			ctx.fillRect(xl, yt, xr - xl, newHeight);
 			yt = yt + newHeight;
@@ -96,7 +140,7 @@
 			angle += QUARTER;
 
 			newWidth = INV_PHI * (xr - xl);
-			if (newWidth < MIN_TILE) { break; }
+			if (newWidth < minTile) { break; }
 			ctx.fillStyle = getColor(i, 2);
 			ctx.fillRect(xr - newWidth, yt, newWidth, yb - yt);
 			xr = xr - newWidth;
@@ -104,7 +148,7 @@
 			angle += QUARTER;
 
 			newHeight = INV_PHI * (yb - yt);
-			if (newHeight < MIN_TILE) { break; }
+			if (newHeight < minTile) { break; }
 			ctx.fillStyle = getColor(i, 3);
 			ctx.fillRect(xl, yb - newHeight, xr - xl, newHeight);
 			yb = yb - newHeight;
@@ -113,7 +157,9 @@
 		}
 
 		ctx.strokeStyle = 'rgb(255,255,255)';
-		ctx.lineWidth = LINE_WIDTH;
+		// lineWidth is in user space, which the transform scales, so divide it
+		// back out to keep the overlay one CSS pixel at every zoom.
+		ctx.lineWidth = LINE_WIDTH / zoom;
 		ctx.stroke();
 	}
 
@@ -153,7 +199,12 @@
 						};
 					}
 
+					var zoom = 1;
+					var frame = null;
+
 					function render() {
+						frame = null;
+
 						// The `depth` attribute caps the number of turns on top
 						// of the pixel-size bound; unset means draw all visible
 						// turns.
@@ -175,13 +226,79 @@
 						canvas.style.width = size.width + 'px';
 						canvas.style.height = size.height + 'px';
 
-						// Assigning width or height resets the context, its
-						// transform included, so this must follow. Every
-						// coordinate below is then in CSS pixels.
-						ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-
-						draw(ctx, size.width, size.height, maxTurns);
+						draw(ctx, size.width, size.height, maxTurns, ratio, zoom);
 					}
+
+					// Coalesce the redraws a gesture produces into one per
+					// frame; a wheel can fire far faster than the display.
+					function scheduleRender() {
+						if (frame === null) {
+							frame = window.requestAnimationFrame(render);
+						}
+					}
+
+					function zoomBy(factor) {
+						zoom = wrapZoom(zoom * factor);
+						scheduleRender();
+					}
+
+					iElm.on('wheel', function(event) {
+						event.preventDefault();
+						// deltaY is reported in wildly different units across
+						// browsers and devices, so treat it as a magnitude
+						// rather than trusting its scale.
+						zoomBy(Math.pow(WHEEL_STEP, -event.deltaY));
+					});
+
+					canvas.setAttribute('tabindex', '0');
+					iElm.on('keydown', function(event) {
+						if (event.key === '+' || event.key === '=') {
+							event.preventDefault();
+							zoomBy(KEY_STEP);
+						} else if (event.key === '-' || event.key === '_') {
+							event.preventDefault();
+							zoomBy(1 / KEY_STEP);
+						}
+					});
+
+					// Pinch. touch-action is set so the browser does not claim
+					// the gesture for page zoom before it reaches us.
+					canvas.style.touchAction = 'none';
+					var pinch = 0;
+
+					function spread(touches) {
+						var dx = touches[0].clientX - touches[1].clientX;
+						var dy = touches[0].clientY - touches[1].clientY;
+						return Math.sqrt(dx * dx + dy * dy);
+					}
+
+					iElm.on('touchstart', function(event) {
+						if (event.touches.length === 2) {
+							pinch = spread(event.touches);
+						}
+					});
+
+					iElm.on('touchmove', function(event) {
+						if (event.touches.length !== 2 || pinch === 0) {
+							return;
+						}
+						event.preventDefault();
+						var now = spread(event.touches);
+						if (now > 0) {
+							zoomBy(now / pinch);
+							pinch = now;
+						}
+					});
+
+					iElm.on('touchend', function() {
+						pinch = 0;
+					});
+
+					$scope.$on('$destroy', function() {
+						if (frame !== null) {
+							window.cancelAnimationFrame(frame);
+						}
+					});
 
 					// Redraw when the inputs change. $watchGroup fires once up
 					// front and once per change, where three separate $observe
