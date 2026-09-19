@@ -395,15 +395,24 @@ describe('fibonacci spiral directive', function() {
     });
   });
 
-  it('uses colour channels that are within range', function() {
-    render(200, 200);
-    rects().forEach(function(rect) {
-      var channels = /^rgb\((\d+),(\d+),(\d+)\)$/.exec(rect.fillStyle);
+  it('draws every tile in a colour from the palette', function() {
+    var PALETTE = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100',
+                   '#e87ba4', '#008300', '#4a3aa7', '#e34948'];
 
-      expect(channels).not.toBeNull();
-      for (var i = 1; i <= 3; i++) {
-        expect(Number(channels[i])).not.toBeGreaterThan(255);
-      }
+    render(400, 247);
+    rects().forEach(function(rect) {
+      expect(PALETTE.indexOf(rect.fillStyle)).not.toBeLessThan(0);
     });
+  });
+
+  it('never paints two neighbouring tiles the same colour', function() {
+    // The point of the palette: adjacent tiles share an edge, so if they
+    // share a colour the boundary between them disappears.
+    render(400, 247);
+    var drawn = rects();
+
+    for (var i = 1; i < drawn.length; i++) {
+      expect(drawn[i].fillStyle).not.toBe(drawn[i - 1].fillStyle);
+    }
   });
 });
