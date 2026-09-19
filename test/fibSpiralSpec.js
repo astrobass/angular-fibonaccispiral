@@ -102,6 +102,35 @@ describe('fibonacci spiral directive', function() {
     });
   });
 
+  it('does not draw tiles too small to see', function() {
+    render(200, 200);
+    rects().forEach(function(rect) {
+      expect(rect.w).not.toBeLessThan(1);
+      expect(rect.h).not.toBeLessThan(1);
+    });
+  });
+
+  it('scales detail with the canvas size', function() {
+    // The old fixed count of four turns drew the same 16 tiles regardless of
+    // size, so a large canvas lost detail and a small one drew invisibly.
+    render(200, 200);
+    var small = rects().length;
+
+    calls = [];
+    render(800, 800);
+    var large = rects().length;
+
+    expect(large).toBeGreaterThan(small);
+  });
+
+  it('caps the number of turns at the depth attribute', function() {
+    var element = angular.element('<div><div fibonacci width="800" height="800" depth="2"></div></div>');
+    compile(element)(outerScope);
+    outerScope.$digest();
+
+    expect(rects().length).toBe(8);
+  });
+
   it('uses colour channels that are within range', function() {
     render(200, 200);
     rects().forEach(function(rect) {
