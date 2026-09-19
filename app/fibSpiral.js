@@ -14,7 +14,6 @@ angular.module('fibonacci',[])
 				var r = 0, g = 0, b = 0;
 				var width = iElm[0].width;
 				var height = iElm[0].height;
-				var s = 0;
 				// That recursion only holds if the rectangle is already golden, so
 				// subdivide the largest golden rectangle that fits the canvas
 				// rather than the canvas itself.
@@ -42,34 +41,27 @@ angular.module('fibonacci',[])
 					return "rgb("+r+","+g+","+b+")";
 				}
 				for (var i=0; i<4; i++) {
-					if (s % 4 === 0) {
-						newWidth = INV_PHI * (xr - xl);
-						ctx.fillStyle = getColor(i);
-						ctx.fillRect(xl, yt, newWidth, yb - yt);
-						xl = xl + newWidth;
-					}
-					s++;
-					if (s % 4 === 1) {
-						newHeight = INV_PHI * (yb - yt);
-						ctx.fillStyle = getColor(i);
-						ctx.fillRect(xl, yt, xr - xl, newHeight);
-						yt = yt + newHeight;
-					}
-					s++;
-					if (s % 4 === 2) {
-						newWidth = INV_PHI * (xr - xl);
-						ctx.fillStyle = getColor(i);
-						ctx.fillRect(xr - newWidth, yt, newWidth, yb - yt);
-						xr = xr - newWidth;
-					}
-					s++;
-					if (s % 4 === 3) {
-						newHeight = INV_PHI * (yb - yt);
-						ctx.fillStyle = getColor(i);
-						ctx.fillRect(xl, yb - newHeight, xr - xl, newHeight);
-						yb = yb - newHeight;
-					}
-					s++;
+					// Remove a square from the left edge, then the top, then the
+					// right, then the bottom -- one full turn of the spiral.
+					newWidth = INV_PHI * (xr - xl);
+					ctx.fillStyle = getColor(i);
+					ctx.fillRect(xl, yt, newWidth, yb - yt);
+					xl = xl + newWidth;
+
+					newHeight = INV_PHI * (yb - yt);
+					ctx.fillStyle = getColor(i);
+					ctx.fillRect(xl, yt, xr - xl, newHeight);
+					yt = yt + newHeight;
+
+					newWidth = INV_PHI * (xr - xl);
+					ctx.fillStyle = getColor(i);
+					ctx.fillRect(xr - newWidth, yt, newWidth, yb - yt);
+					xr = xr - newWidth;
+
+					newHeight = INV_PHI * (yb - yt);
+					ctx.fillStyle = getColor(i);
+					ctx.fillRect(xl, yb - newHeight, xr - xl, newHeight);
+					yb = yb - newHeight;
 				}
 			}
 		};
