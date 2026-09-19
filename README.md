@@ -40,7 +40,7 @@ the canvas to roughly 1.618:1 to use all of it -- `width="400" height="247"`.
 ## Development
 
 ```
-npm install
+npm ci
 npm test
 ```
 
