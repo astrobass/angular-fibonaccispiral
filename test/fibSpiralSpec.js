@@ -15,6 +15,9 @@ describe('fibonacci spiral directive', function() {
         calls.push({ op: 'fillRect', x: x, y: y, w: w, h: h, fillStyle: ctx.fillStyle });
       },
       beginPath: function() { calls.push({ op: 'beginPath' }); },
+      clearRect: function(x, y, w, h) {
+        calls.push({ op: 'clearRect', x: x, y: y, w: w, h: h });
+      },
       arc: function(x, y, r, start, end) {
         calls.push({ op: 'arc', x: x, y: y, r: r, start: start, end: end });
       },
@@ -188,7 +191,41 @@ describe('fibonacci spiral directive', function() {
     var strokes = calls.filter(function(call) { return call.op === 'stroke'; });
 
     expect(strokes.length).toBe(1);
-    expect(calls[0].op).toBe('beginPath');
+    expect(calls[0].op).toBe('clearRect');
+    expect(calls[1].op).toBe('beginPath');
+  });
+
+  it('redraws when the size changes', function() {
+    var element = angular.element('<div><div fibonacci width="{{w}}" height="200"></div></div>');
+    outerScope.w = 200;
+    compile(element)(outerScope);
+    outerScope.$digest();
+
+    var first = rects().length;
+    expect(first).toBeGreaterThan(0);
+
+    calls = [];
+    outerScope.w = 800;
+    outerScope.$digest();
+
+    // A fresh figure, cleared first rather than drawn over the old one.
+    expect(calls[0].op).toBe('clearRect');
+    expect(rects().length).not.toBe(first);
+  });
+
+  it('redraws when the depth changes', function() {
+    var element = angular.element('<div><div fibonacci width="800" height="800" depth="{{d}}"></div></div>');
+    outerScope.d = 1;
+    compile(element)(outerScope);
+    outerScope.$digest();
+
+    expect(rects().length).toBe(4);
+
+    calls = [];
+    outerScope.d = 3;
+    outerScope.$digest();
+
+    expect(rects().length).toBe(12);
   });
 
   it('uses colour channels that are within range', function() {

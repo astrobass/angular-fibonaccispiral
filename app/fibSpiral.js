@@ -39,6 +39,7 @@
 		// the arcs can accumulate while the squares are being filled.
 		var angle = Math.PI;
 
+		ctx.clearRect(0, 0, width, height);
 		ctx.beginPath();
 
 		for (var i = 0; i < maxTurns; i++) {
@@ -101,14 +102,27 @@
 						return;
 					}
 
-					// The `depth` attribute caps the number of turns on top of
-					// the pixel-size bound; unset means draw all visible turns.
-					var maxTurns = parseInt(iAttrs.depth, 10);
-					if (!(maxTurns > 0)) {
-						maxTurns = Infinity;
+					function render() {
+						// The `depth` attribute caps the number of turns on top
+						// of the pixel-size bound; unset means draw all visible
+						// turns.
+						var maxTurns = parseInt(iAttrs.depth, 10);
+						if (!(maxTurns > 0)) {
+							maxTurns = Infinity;
+						}
+
+						draw(ctx, canvas.width, canvas.height, maxTurns);
 					}
 
-					draw(ctx, canvas.width, canvas.height, maxTurns);
+					// Redraw when the inputs change. $watchGroup fires once up
+					// front and once per change, where three separate $observe
+					// calls would each fire their own initial pass and draw the
+					// figure four times over.
+					$scope.$watchGroup([
+						function() { return iAttrs.width; },
+						function() { return iAttrs.height; },
+						function() { return iAttrs.depth; }
+					], render);
 				}
 			};
 		});
