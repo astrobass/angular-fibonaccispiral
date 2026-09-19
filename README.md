@@ -23,7 +23,7 @@ npm install angular@^1.8.3
 ## Usage
 
 ```html
-<div fibonacci width="400" height="400"></div>
+<div fibonacci width="400" height="247"></div>
 ```
 
 ```js
