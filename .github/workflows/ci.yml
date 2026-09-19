@@ -14,15 +14,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
 
       # npm ci installs exactly what package-lock.json pins, and fails if the
       # lockfile and manifest disagree.
       - run: npm ci
+
+      - name: Lint
+        run: npm run lint
 
       # Karma launches ChromeHeadlessNoSandbox; the runner ships Chrome, and
       # CHROME_BIN tells karma-chrome-launcher where to find it.
