@@ -15,9 +15,16 @@
 	// nothing unless it is given a role and a name.
 	var LABEL = 'A Fibonacci spiral: nested golden-ratio squares, each with a quarter arc inscribed. ' +
 		'Scroll, pinch, or press plus and minus to zoom in without limit.';
-	// One wheel notch, and one press of + or -.
-	var WHEEL_STEP = 1.0015;
-	var KEY_STEP = 1.2;
+	// How far one wheel notch, or one press of + or -, moves the zoom. At 1.5
+	// a full self-similar period (phi^8, about 47x) is nine notches away;
+	// stepping by a few percent made descending the spiral a chore.
+	var ZOOM_STEP = 1.5;
+	// A notch is ~100px in pixel mode. Line and page modes report the same
+	// gesture as a much smaller number, so normalise rather than trusting the
+	// raw value -- otherwise a line-mode wheel zooms ~33x slower.
+	var WHEEL_NOTCH = 100;
+	var LINE_HEIGHT = 16;
+	var PAGE_HEIGHT = 800;
 	// The spiral is an overlay stroked on top of the finished tiling, so its
 	// width does not enter the geometry: the tiles fill the canvas and the
 	// line is drawn over them. One CSS pixel is the thinnest the curve reads
@@ -242,22 +249,32 @@
 						scheduleRender();
 					}
 
+					// deltaY means pixels, lines or pages depending on the
+					// device and browser; convert to pixels so the same
+					// gesture zooms the same amount everywhere.
+					function wheelPixels(event) {
+						if (event.deltaMode === 1) {
+							return event.deltaY * LINE_HEIGHT;
+						}
+						if (event.deltaMode === 2) {
+							return event.deltaY * PAGE_HEIGHT;
+						}
+						return event.deltaY;
+					}
+
 					iElm.on('wheel', function(event) {
 						event.preventDefault();
-						// deltaY is reported in wildly different units across
-						// browsers and devices, so treat it as a magnitude
-						// rather than trusting its scale.
-						zoomBy(Math.pow(WHEEL_STEP, -event.deltaY));
+						zoomBy(Math.pow(ZOOM_STEP, -wheelPixels(event) / WHEEL_NOTCH));
 					});
 
 					canvas.setAttribute('tabindex', '0');
 					iElm.on('keydown', function(event) {
 						if (event.key === '+' || event.key === '=') {
 							event.preventDefault();
-							zoomBy(KEY_STEP);
+							zoomBy(ZOOM_STEP);
 						} else if (event.key === '-' || event.key === '_') {
 							event.preventDefault();
-							zoomBy(1 / KEY_STEP);
+							zoomBy(1 / ZOOM_STEP);
 						}
 					});
 
