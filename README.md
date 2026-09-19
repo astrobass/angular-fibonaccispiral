@@ -46,7 +46,9 @@ npm test
 ```
 
 Karma runs the suite in headless Chrome. Set `CHROME_BIN` if Chrome is not on
-the default path. `test/test.html` runs the same specs in a real browser.
+the default path. `test/test.html` runs the same specs in a real browser; CI
+does not load it, so `npm run check:test-page` verifies its assets resolve and
+that it still loads the shared spec file rather than an inline copy.
 
 Karma also writes an lcov report to `coverage/`. It is not uploaded anywhere;
 open `coverage/*/lcov-report/index.html` to read it locally.

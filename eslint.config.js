@@ -43,7 +43,7 @@ module.exports = [
 
   // Config files run in Node, not the browser.
   {
-    files: ['*.config.js', 'karma.conf.js'],
+    files: ['*.config.js', 'karma.conf.js', 'scripts/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',
