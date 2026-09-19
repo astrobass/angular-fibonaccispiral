@@ -15,6 +15,9 @@ describe('fibonacci spiral directive', function() {
         calls.push({ op: 'fillRect', x: x, y: y, w: w, h: h, fillStyle: ctx.fillStyle });
       },
       beginPath: function() { calls.push({ op: 'beginPath' }); },
+      setTransform: function(a, b, c, d, e, f) {
+        calls.push({ op: 'setTransform', a: a, b: b, c: c, d: d, e: e, f: f });
+      },
       clearRect: function(x, y, w, h) {
         calls.push({ op: 'clearRect', x: x, y: y, w: w, h: h });
       },
@@ -74,10 +77,30 @@ describe('fibonacci spiral directive', function() {
   it('replaces the element with a canvas of the requested size', function() {
     var element = render(200, 200);
     var canvas = element[0].querySelector('canvas');
+    var ratio = window.devicePixelRatio || 1;
 
     expect(canvas).not.toBeNull();
-    expect(canvas.width).toBe(200);
-    expect(canvas.height).toBe(200);
+    // Laid out at the requested CSS size...
+    expect(canvas.style.width).toBe('200px');
+    expect(canvas.style.height).toBe('200px');
+    // ...but backed by enough device pixels to stay sharp.
+    expect(canvas.width).toBe(200 * ratio);
+    expect(canvas.height).toBe(200 * ratio);
+  });
+
+  it('scales the drawing to the device pixel ratio', function() {
+    render(200, 200);
+    var ratio = window.devicePixelRatio || 1;
+    var transforms = calls.filter(function(call) { return call.op === 'setTransform'; });
+
+    expect(transforms.length).toBe(1);
+    expect(transforms[0].a).toBe(ratio);
+    expect(transforms[0].d).toBe(ratio);
+
+    // The transform must be applied before anything is drawn, since assigning
+    // canvas.width resets it.
+    expect(calls.indexOf(transforms[0])).toBeLessThan(
+      calls.indexOf(calls.filter(function(c) { return c.op === 'fillRect'; })[0]));
   });
 
   it('gives the canvas an accessible role and name', function() {
@@ -270,9 +293,12 @@ describe('fibonacci spiral directive', function() {
     render(200, 200);
     var strokes = calls.filter(function(call) { return call.op === 'stroke'; });
 
+    var ops = calls.map(function(call) { return call.op; });
+
     expect(strokes.length).toBe(1);
-    expect(calls[0].op).toBe('clearRect');
-    expect(calls[1].op).toBe('beginPath');
+    // The canvas is cleared, then one path is opened, then it is stroked.
+    expect(ops.indexOf('clearRect')).toBeLessThan(ops.indexOf('beginPath'));
+    expect(ops.indexOf('beginPath')).toBeLessThan(ops.indexOf('stroke'));
   });
 
   it('redraws when the size changes', function() {
@@ -289,7 +315,8 @@ describe('fibonacci spiral directive', function() {
     outerScope.$digest();
 
     // A fresh figure, cleared first rather than drawn over the old one.
-    expect(calls[0].op).toBe('clearRect');
+    var ops = calls.map(function(call) { return call.op; });
+    expect(ops.indexOf('clearRect')).toBeLessThan(ops.indexOf('fillRect'));
     expect(rects().length).not.toBe(first);
   });
 

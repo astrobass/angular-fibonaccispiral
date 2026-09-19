@@ -8,6 +8,9 @@
 	// Squares below a pixel render as nothing, so the loop is bounded by canvas
 	// size rather than by a hardcoded iteration count.
 	var MIN_TILE = 1;
+	// An unsized <canvas> is 300x150 per the HTML spec.
+	var DEFAULT_WIDTH = 300;
+	var DEFAULT_HEIGHT = 150;
 	// A canvas has no text of its own, so assistive technology announces
 	// nothing unless it is given a role and a name.
 	var LABEL = 'A Fibonacci spiral: nested golden-ratio squares, each with a quarter arc inscribed.';
@@ -121,6 +124,19 @@
 						canvas.setAttribute('aria-label', LABEL);
 					}
 
+					// The size the figure is drawn in, in CSS pixels. Read from
+					// the attributes rather than from canvas.width, which after
+					// the first render holds device pixels instead.
+					function logicalSize() {
+						var width = parseFloat(iAttrs.width);
+						var height = parseFloat(iAttrs.height);
+
+						return {
+							width: width > 0 ? width : DEFAULT_WIDTH,
+							height: height > 0 ? height : DEFAULT_HEIGHT
+						};
+					}
+
 					function render() {
 						// The `depth` attribute caps the number of turns on top
 						// of the pixel-size bound; unset means draw all visible
@@ -130,7 +146,25 @@
 							maxTurns = Infinity;
 						}
 
-						draw(ctx, canvas.width, canvas.height, maxTurns);
+						var size = logicalSize();
+						// A canvas is laid out in CSS pixels but draws into a
+						// backing store sized in device pixels. Sizing that
+						// store to the CSS size leaves the browser to upscale
+						// it, which is what made the figure blurry on any
+						// high-DPI display.
+						var ratio = window.devicePixelRatio || 1;
+
+						canvas.width = size.width * ratio;
+						canvas.height = size.height * ratio;
+						canvas.style.width = size.width + 'px';
+						canvas.style.height = size.height + 'px';
+
+						// Assigning width or height resets the context, its
+						// transform included, so this must follow. Every
+						// coordinate below is then in CSS pixels.
+						ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+						draw(ctx, size.width, size.height, maxTurns);
 					}
 
 					// Redraw when the inputs change. $watchGroup fires once up
