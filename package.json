@@ -1,9 +1,8 @@
 {
   "name": "angular-fibonaccispiral",
   "version": "1.0.0",
-  "description": "[![Stories in Ready](https://badge.waffle.io/astrobass/ng-fibonaccispiral.png?label=ready&title=Ready)](http://waffle.io/astrobass/ng-fibonaccispiral)",
-  "main": "angular-fibonaccispiral.js",
-  "directories": {},
+  "description": "An AngularJS directive that draws a Fibonacci (golden) spiral on a canvas.",
+  "main": "app/fibSpiral.js",
   "dependencies": {
     "angular": "^1.8.3"
   },
@@ -26,10 +25,24 @@
     "type": "git",
     "url": "git+https://github.com/astrobass/angular-fibonaccispiral.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Corey Wendling <github@wtree.com>",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/astrobass/angular-fibonaccispiral/issues"
   },
-  "homepage": "https://github.com/astrobass/angular-fibonaccispiral#readme"
+  "homepage": "https://github.com/astrobass/angular-fibonaccispiral#readme",
+  "keywords": [
+    "angular",
+    "angularjs",
+    "directive",
+    "fibonacci",
+    "golden-ratio",
+    "spiral",
+    "canvas"
+  ],
+  "files": [
+    "app/fibSpiral.js",
+    "README.md",
+    "LICENSE"
+  ]
 }
