@@ -46,6 +46,10 @@ The figure zooms without limit: **scroll**, **pinch**, or focus it and press
 **+** / **-**. The canvas is keyboard-reachable, so the zoom is not
 mouse-only.
 
+One notch, or one keypress, is 1.5x, so a full self-similar period is about
+nine of them away. Wheel deltas are normalised across the pixel, line and page
+units browsers report, so the same gesture zooms the same amount on any device.
+
 Zooming descends into the spiral rather than magnifying it -- tiles too small
 to draw at one level become visible at the next, and the point the squares
 converge on stays pinned on screen.
