@@ -24,7 +24,10 @@ describe('fibonacci spiral directive', function() {
       arc: function(x, y, r, start, end) {
         calls.push({ op: 'arc', x: x, y: y, r: r, start: start, end: end });
       },
-      stroke: function() { calls.push({ op: 'stroke', strokeStyle: ctx.strokeStyle }); }
+      stroke: function() {
+        calls.push({ op: 'lineWidth', value: ctx.lineWidth });
+        calls.push({ op: 'stroke', strokeStyle: ctx.strokeStyle });
+      }
     };
     return ctx;
   }
@@ -369,6 +372,143 @@ describe('fibonacci spiral directive', function() {
 
       expect(fillsWidth || fillsHeight).toBe(true);
     });
+  });
+
+  // Zoom is applied through the canvas transform and the redraw is scheduled
+  // on a frame, so these wait for one.
+  var PHI = (1 + Math.sqrt(5)) / 2;
+  var ZOOM_PERIOD = Math.pow(PHI, 8);
+  var WHEEL_STEP = 1.0015;
+
+  function wheelTo(canvas, factor) {
+    canvas.dispatchEvent(new WheelEvent('wheel', {
+      deltaY: -Math.log(factor) / Math.log(WHEEL_STEP),
+      bubbles: true,
+      cancelable: true
+    }));
+  }
+
+  function afterFrame(then) {
+    window.requestAnimationFrame(function() {
+      window.requestAnimationFrame(then);
+    });
+  }
+
+  function transform() {
+    return calls.filter(function(call) { return call.op === 'setTransform'; }).pop();
+  }
+
+  it('zooms in on the wheel, revealing tiles that were too small to draw',
+    function(done) {
+      var element = render(400, 247);
+      var canvas = element[0].querySelector('canvas');
+      var before = Math.min.apply(null, rects().map(function(r) { return r.w; }));
+
+      calls = [];
+      // Mid-period: zooming by a multiple of phi^8 wraps back to the same
+      // phase and would legitimately draw the same tiles.
+      wheelTo(canvas, 10);
+      afterFrame(function() {
+        var after = Math.min.apply(null, rects().map(function(r) { return r.w; }));
+
+        // Tiles below a pixel are skipped, and the cutoff moves with the zoom,
+        // so zooming in brings smaller ones into play rather than just
+        // magnifying what was already there.
+        expect(after).toBeLessThan(before);
+        done();
+      });
+    });
+
+  it('renders zoom and zoom * phi^8 identically', function(done) {
+    // Removing eight squares reproduces the tiling scaled by phi^-8 about the
+    // convergence point, and the palette repeats over the same eight. This is
+    // what lets the zoom run without bound: it is reduced into one period
+    // before drawing, so the coordinates never leave a range doubles hold.
+    var element = render(400, 247);
+    var canvas = element[0].querySelector('canvas');
+
+    calls = [];
+    wheelTo(canvas, 3);
+    afterFrame(function() {
+      var plain = rects().map(function(r) {
+        return [r.x, r.y, r.w, r.h, r.fillStyle].join(',');
+      });
+
+      calls = [];
+      wheelTo(canvas, ZOOM_PERIOD);
+      afterFrame(function() {
+        var wrapped = rects().map(function(r) {
+          return [r.x, r.y, r.w, r.h, r.fillStyle].join(',');
+        });
+
+        expect(wrapped).toEqual(plain);
+        done();
+      });
+    });
+  });
+
+  it('keeps the convergence point pinned while zooming', function(done) {
+    var EYE = (1 + 1 / Math.sqrt(5)) / 2;
+    var rect = { width: 247 * PHI, height: 247 };
+    var eyeX = (400 - rect.width) / 2 + rect.width * EYE;
+    var element = render(400, 247);
+    var canvas = element[0].querySelector('canvas');
+
+    function eyeOnScreen() {
+      var t = transform();
+      return t.a * eyeX + t.e;
+    }
+
+    var at1 = eyeOnScreen();
+
+    calls = [];
+    wheelTo(canvas, 5000);
+    afterFrame(function() {
+      // The zoom pivots about this point, so it must not drift.
+      expect(eyeOnScreen()).toBeCloseTo(at1, 6);
+      done();
+    });
+  });
+
+  it('holds the stroke at one CSS pixel however far it is zoomed',
+    function(done) {
+      var element = render(400, 247);
+      var canvas = element[0].querySelector('canvas');
+      var ratio = window.devicePixelRatio || 1;
+
+      calls = [];
+      wheelTo(canvas, 1e9);
+      afterFrame(function() {
+        var t = transform();
+        var widths = calls.filter(function(c) { return c.op === 'lineWidth'; });
+        var zoom = t.a / ratio;
+
+        // lineWidth is in user space, which the transform scales.
+        expect(widths[widths.length - 1].value * zoom).toBeCloseTo(1, 6);
+        done();
+      });
+    });
+
+  it('zooms on + and -', function(done) {
+    var element = render(400, 247);
+    var canvas = element[0].querySelector('canvas');
+    var before = transform().a;
+
+    canvas.dispatchEvent(new KeyboardEvent('keydown', { key: '+', bubbles: true }));
+    afterFrame(function() {
+      expect(transform().a).toBeGreaterThan(before);
+
+      canvas.dispatchEvent(new KeyboardEvent('keydown', { key: '-', bubbles: true }));
+      afterFrame(function() {
+        expect(transform().a).toBeCloseTo(before, 6);
+        done();
+      });
+    });
+  });
+
+  it('is reachable by keyboard', function() {
+    var element = render(400, 247);
+    expect(element[0].querySelector('canvas').getAttribute('tabindex')).toBe('0');
   });
 
   it('draws every tile in a colour from the palette', function() {
