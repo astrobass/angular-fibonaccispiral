@@ -49,6 +49,16 @@ npm test
 Karma runs the suite in headless Chrome. Set `CHROME_BIN` if Chrome is not on
 the default path. `test/test.html` runs the same specs in a real browser.
 
+## GitHub Pages
+
+The demo at https://astrobass.github.io/angular-fibonaccispiral/ is published
+by `.github/workflows/pages.yml` on every push to `master`, which rebuilds the
+`gh-pages` branch from `app/`. Do not edit `gh-pages` by hand: it is a build
+output, and hand edits are overwritten by the next deploy.
+
+Only `index.html` and `fibSpiral.js` are published. The specs are deliberately
+left out.
+
 ## To run in Docker on port 8080
 
 Build the repository
