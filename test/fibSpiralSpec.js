@@ -112,16 +112,78 @@ describe('fibonacci spiral directive', function() {
     }
   });
 
-  it('draws square tiles, whatever the canvas aspect ratio', function() {
-    [[200, 200], [300, 150], [120, 400]].forEach(function(size) {
+  // Extremes included deliberately: the tiling is only correct because the
+  // rectangle being subdivided is golden, and a very wide or very tall canvas
+  // is where a broken inscription would show up first.
+  var ASPECTS = [[200, 200], [300, 150], [120, 400], [1000, 300], [120, 900]];
+
+  function forEachAspect(assert) {
+    ASPECTS.forEach(function(size) {
       calls = [];
       render(size[0], size[1]);
+      assert(rects(), size);
+    });
+  }
 
-      rects().forEach(function(rect) {
+  it('draws square tiles, whatever the canvas aspect ratio', function() {
+    forEachAspect(function(tiles) {
+      tiles.forEach(function(tile) {
         // A Fibonacci tiling removes a square at each step; anything else is
         // a nested-rectangle spiral, not a golden one.
-        expect(Math.abs(rect.w - rect.h)).toBeLessThan(0.0001);
+        expect(Math.abs(tile.w - tile.h)).toBeLessThan(1e-9);
       });
+    });
+  });
+
+  it('shrinks each tile from the last by exactly phi', function() {
+    // Squareness alone does not make the figure golden: a run of squares
+    // shrinking by any other constant would still pass that check. The ratio
+    // between consecutive sides is what makes it a Fibonacci spiral.
+    var PHI = (1 + Math.sqrt(5)) / 2;
+
+    forEachAspect(function(tiles) {
+      expect(tiles.length).toBeGreaterThan(1);
+
+      for (var i = 1; i < tiles.length; i++) {
+        expect(tiles[i - 1].w / tiles[i].w).toBeCloseTo(PHI, 9);
+      }
+    });
+  });
+
+  it('never overlaps two tiles', function() {
+    // Each square is cut from the rectangle that remains, so the tiles
+    // partition it. Overlap would mean a step consumed more than it removed.
+    forEachAspect(function(tiles) {
+      for (var i = 0; i < tiles.length; i++) {
+        for (var j = i + 1; j < tiles.length; j++) {
+          var a = tiles[i];
+          var b = tiles[j];
+          var overlapX = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
+          var overlapY = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+
+          // Touching edges are expected; overlapping interiors are not.
+          expect(overlapX > 1e-9 && overlapY > 1e-9).toBe(false);
+        }
+      }
+    });
+  });
+
+  it('tiles a golden rectangle', function() {
+    // The precondition the whole algorithm rests on: subdividing anything but
+    // a golden rectangle silently stops producing squares.
+    var PHI = (1 + Math.sqrt(5)) / 2;
+
+    forEachAspect(function(tiles) {
+      var left = Math.min.apply(null, tiles.map(function(t) { return t.x; }));
+      var right = Math.max.apply(null, tiles.map(function(t) { return t.x + t.w; }));
+      var top = Math.min.apply(null, tiles.map(function(t) { return t.y; }));
+      var bottom = Math.max.apply(null, tiles.map(function(t) { return t.y + t.h; }));
+
+      var width = right - left;
+      var height = bottom - top;
+      var ratio = Math.max(width, height) / Math.min(width, height);
+
+      expect(ratio).toBeCloseTo(PHI, 9);
     });
   });
 
