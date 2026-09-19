@@ -14,10 +14,12 @@
 	// A canvas has no text of its own, so assistive technology announces
 	// nothing unless it is given a role and a name.
 	var LABEL = 'A Fibonacci spiral: nested golden-ratio squares, each with a quarter arc inscribed.';
-	// The spiral is stroked along the tile boundaries, and a stroke is centred
-	// on its path, so half of it falls outside the tiling. The drawing area is
-	// inset by that much to keep the outermost arc off the canvas edge.
-	var LINE_WIDTH = 2;
+	// The spiral is an overlay stroked on top of the finished tiling, so its
+	// width does not enter the geometry: the tiles fill the canvas and the
+	// line is drawn over them. One CSS pixel is the thinnest the curve reads
+	// as a drawn line; below a device pixel a stroke stops getting thinner
+	// and only gets fainter.
+	var LINE_WIDTH = 1;
 
 	// A validated categorical order: every adjacent pair clears the
 	// colour-vision-deficiency and normal-vision separation gates (worst
@@ -53,7 +55,7 @@
 	}
 
 	function draw(ctx, width, height, maxTurns) {
-		var rect = goldenRect(width - LINE_WIDTH, height - LINE_WIDTH);
+		var rect = goldenRect(width, height);
 		// The tiling only fills a golden rectangle, so on a canvas of any other
 		// aspect ratio there is space left over. Centre the figure in it rather
 		// than pinning it to the top-left corner.
