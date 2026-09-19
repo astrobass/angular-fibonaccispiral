@@ -378,11 +378,16 @@ describe('fibonacci spiral directive', function() {
   // on a frame, so these wait for one.
   var PHI = (1 + Math.sqrt(5)) / 2;
   var ZOOM_PERIOD = Math.pow(PHI, 8);
-  var WHEEL_STEP = 1.0015;
+  var ZOOM_STEP = 1.5;
+  var WHEEL_NOTCH = 100;
 
-  function wheelTo(canvas, factor) {
+  function wheelTo(canvas, factor, deltaMode) {
+    var pixels = -Math.log(factor) / Math.log(ZOOM_STEP) * WHEEL_NOTCH;
+    var scale = deltaMode === 1 ? 16 : (deltaMode === 2 ? 800 : 1);
+
     canvas.dispatchEvent(new WheelEvent('wheel', {
-      deltaY: -Math.log(factor) / Math.log(WHEEL_STEP),
+      deltaY: pixels / scale,
+      deltaMode: deltaMode || 0,
       bubbles: true,
       cancelable: true
     }));
@@ -418,6 +423,35 @@ describe('fibonacci spiral directive', function() {
         done();
       });
     });
+
+  it('zooms the same amount whatever units the wheel reports', function(done) {
+    // deltaY arrives in pixels, lines or pages depending on the device. A
+    // line-mode wheel reports the same gesture as a number ~16x smaller, so
+    // without normalising, the same scroll zooms 16x less.
+    var perMode = [];
+
+    function measure(mode, then) {
+      var element = render(400, 247);
+      var canvas = element[0].querySelector('canvas');
+
+      calls = [];
+      wheelTo(canvas, 8, mode);
+      afterFrame(function() {
+        perMode.push(transform().a);
+        then();
+      });
+    }
+
+    measure(0, function() {
+      measure(1, function() {
+        measure(2, function() {
+          expect(perMode[1]).toBeCloseTo(perMode[0], 6);
+          expect(perMode[2]).toBeCloseTo(perMode[0], 6);
+          done();
+        });
+      });
+    });
+  });
 
   it('renders zoom and zoom * phi^8 identically', function(done) {
     // Removing eight squares reproduces the tiling scaled by phi^-8 about the
