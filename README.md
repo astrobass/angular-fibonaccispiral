@@ -1,7 +1,5 @@
 # angular-fibonaccispiral
 
-[![codecov](https://codecov.io/gh/astrobass/angular-fibonaccispiral/branch/master/graph/badge.svg)](https://codecov.io/gh/astrobass/angular-fibonaccispiral)
-
 An AngularJS directive that draws a Fibonacci (golden) spiral on a `<canvas>`:
 a tiling of squares whose sides follow the golden ratio, with a quarter arc
 inscribed in each one.
@@ -48,6 +46,9 @@ npm test
 
 Karma runs the suite in headless Chrome. Set `CHROME_BIN` if Chrome is not on
 the default path. `test/test.html` runs the same specs in a real browser.
+
+Karma also writes an lcov report to `coverage/`. It is not uploaded anywhere;
+open `coverage/*/lcov-report/index.html` to read it locally.
 
 ## GitHub Pages
 
