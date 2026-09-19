@@ -5,10 +5,10 @@
   "main": "angular-fibonaccispiral.js",
   "directories": {},
   "dependencies": {
-    "angular": "^1.6.5"
+    "angular": "^1.8.3"
   },
   "devDependencies": {
-    "angular-mocks": "^1.6.5",
+    "angular-mocks": "^1.8.3",
     "codecov": "^3.6.5",
     "jasmine": "^2.7.0",
     "jasmine-core": "^2.7.0",
