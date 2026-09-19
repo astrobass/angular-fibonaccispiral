@@ -1,16 +1,13 @@
 {
   "name": "angular-fibonaccispiral",
   "version": "1.0.0",
-  "description": "[![Stories in Ready](https://badge.waffle.io/astrobass/ng-fibonaccispiral.png?label=ready&title=Ready)](http://waffle.io/astrobass/ng-fibonaccispiral)",
-  "main": "angular-fibonaccispiral.js",
-  "directories": {},
+  "description": "An AngularJS directive that draws a Fibonacci (golden) spiral on a canvas.",
+  "main": "app/fibSpiral.js",
   "dependencies": {
-    "angular": "^1.6.5"
+    "angular": "^1.8.3"
   },
   "devDependencies": {
-    "angular-mocks": "^1.6.5",
-    "bower": "^1.8.0",
-    "codecov": "^3.6.5",
+    "angular-mocks": "^1.8.3",
     "jasmine": "^2.7.0",
     "jasmine-core": "^2.7.0",
     "karma": "^1.7.0",
@@ -20,17 +17,30 @@
     "karma-jasmine": "^1.1.0"
   },
   "scripts": {
-    "test": "karma start karma.conf.js",
-    "codecov": "codecov --clear --token=48a3125e-4171-4aec-9311-6447ceb049e3"
+    "test": "karma start karma.conf.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/astrobass/angular-fibonaccispiral.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Corey Wendling <github@wtree.com>",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/astrobass/angular-fibonaccispiral/issues"
   },
-  "homepage": "https://github.com/astrobass/angular-fibonaccispiral#readme"
+  "homepage": "https://github.com/astrobass/angular-fibonaccispiral#readme",
+  "keywords": [
+    "angular",
+    "angularjs",
+    "directive",
+    "fibonacci",
+    "golden-ratio",
+    "spiral",
+    "canvas"
+  ],
+  "files": [
+    "app/fibSpiral.js",
+    "README.md",
+    "LICENSE"
+  ]
 }

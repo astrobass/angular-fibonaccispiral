@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      # Karma launches ChromeHeadlessNoSandbox; the runner ships Chrome, and
+      # CHROME_BIN tells karma-chrome-launcher where to find it.
+      - name: Run tests
+        run: npm test
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+
+      # The `codecov` npm package is sunset and its upload endpoint now
+      # returns a payload its own client cannot parse, so it crashed with
+      # "result.split is not a function" after the tests had already passed.
+      # continue-on-error keeps a coverage-reporting problem -- a missing
+      # token, a fork PR without secrets, an upstream outage -- from
+      # reddening a run whose tests are green.
+      - name: Upload coverage
+        if: ${{ github.repository == 'astrobass/angular-fibonaccispiral' }}
+        continue-on-error: true
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage/**/lcov.info
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

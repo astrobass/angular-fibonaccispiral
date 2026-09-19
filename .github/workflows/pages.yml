@@ -1,0 +1,66 @@
+name: Deploy Pages
+
+# gh-pages is a build output of master, not a branch anyone edits by hand.
+# It used to be a hand-maintained copy, which drifted until it served a stale
+# directive and published the spec file alongside it.
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.repository == 'astrobass/angular-fibonaccispiral'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assemble the site
+        run: |
+          mkdir -p _site
+          # The demo page and the directive it loads. Nothing else is
+          # published -- in particular not the specs, which is how
+          # fibSpiralSpec.js came to be served publicly.
+          cp app/index.html _site/
+          cp app/fibSpiral.js _site/
+
+      - name: Publish to gh-pages
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # Build on the existing branch so its history is kept; create it as
+          # an orphan only if it does not exist yet.
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1; then
+            git fetch origin gh-pages
+            git worktree add pages origin/gh-pages
+            git -C pages checkout -B gh-pages
+            git -C pages rm -rq --ignore-unmatch .
+          else
+            git worktree add --detach pages
+            git -C pages checkout --orphan gh-pages
+            git -C pages rm -rq --cached --ignore-unmatch . || true
+            find pages -maxdepth 1 -mindepth 1 ! -name .git -exec rm -rf {} +
+          fi
+
+          cp _site/. pages/ -r
+          git -C pages add -A
+
+          if git -C pages diff --cached --quiet; then
+            echo "Site unchanged; nothing to publish."
+            exit 0
+          fi
+
+          git -C pages commit -m "Deploy ${GITHUB_SHA} to GitHub Pages"
+          git -C pages push origin gh-pages

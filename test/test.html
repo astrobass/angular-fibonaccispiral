@@ -1,52 +1,21 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.3/jasmine.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.3/jasmine.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.3/jasmine-html.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.3/boot.min.js"></script>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-mocks.js"></script>
-    <script type="text/javascript" src="../app/fibSpiral.js"></script>
+    <meta charset="utf-8">
+    <title>Fibonacci Spiral — specs</title>
+    <link rel="stylesheet" href="../node_modules/jasmine-core/lib/jasmine-core/jasmine.css">
+    <script src="../node_modules/jasmine-core/lib/jasmine-core/jasmine.js"></script>
+    <script src="../node_modules/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>
+    <script src="../node_modules/jasmine-core/lib/jasmine-core/boot.js"></script>
+    <script src="../node_modules/angular/angular.js"></script>
+    <script src="../node_modules/angular-mocks/angular-mocks.js"></script>
+    <script src="../app/fibSpiral.js"></script>
+    <!--
+      The specs live in fibSpiralSpec.js and are shared with Karma. This page
+      exists only to run them in a real browser; do not copy them in here.
+    -->
+    <script src="fibSpiralSpec.js"></script>
   </head>
   <body>
   </body>
-  <script type="text/javascript">
-
-  describe("Unit testing fibonacci spiral", function() {
-    var element;
-    var compile;
-    var directiveElement;
-    var outerScope;
-    var innerScope;
-
-    beforeEach(function() {
-      module('fibonacci');
-
-      inject(function( $compile, $rootScope ) {
-        compile = $compile;
-        outerScope = $rootScope.$new();
-      });
-
-      directiveElement = getCompiledElement();
-    });
-
-    function getCompiledElement() {
-      element = angular.element('<div><div fibonacci></div></div>');
-      var compiledElement = compile(element)(outerScope);
-      innerScope = element.isolateScope();
-      outerScope.$digest();
-      return compiledElement;
-    }
-
-    it("should be defined", function() {
-      expect(element[0]).toBeDefined();
-    });
-
-    it("should match a canvas tag", function() {
-      expect(element[0].innerHTML).toMatch(/<canvas.*<\/canvas>/);
-    });
-
-  });
-
-  </script>
 </html>
