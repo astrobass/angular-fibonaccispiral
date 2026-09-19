@@ -7,6 +7,19 @@ inscribed in each one.
 > **Note:** AngularJS 1.x reached end of life in December 2021 and receives no
 > further security patches. This directive targets AngularJS 1.x only.
 
+## Install
+
+```
+npm install angular-fibonaccispiral
+```
+
+AngularJS is a **peer** dependency: the host application provides it, this
+package does not install its own copy.
+
+```
+npm install angular@^1.8.3
+```
+
 ## Usage
 
 ```html
