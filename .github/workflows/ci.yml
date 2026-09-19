@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      # Karma launches ChromeHeadlessNoSandbox; the runner ships Chrome, and
+      # CHROME_BIN tells karma-chrome-launcher where to find it.
+      - name: Run tests
+        run: npm test
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+
+      - name: Upload coverage
+        if: ${{ github.event_name == 'push' && github.repository == 'astrobass/angular-fibonaccispiral' }}
+        run: npm run codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
