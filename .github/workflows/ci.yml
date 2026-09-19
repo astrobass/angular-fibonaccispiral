@@ -5,6 +5,12 @@ on:
     branches: ['**']
   pull_request:
 
+# id-token lets the Codecov upload authenticate over OIDC instead of a
+# shared secret; contents stays read-only since nothing here writes.
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -25,18 +31,24 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
 
-      # The `codecov` npm package is sunset and its upload endpoint now
-      # returns a payload its own client cannot parse, so it crashed with
-      # "result.split is not a function" after the tests had already passed.
-      # continue-on-error keeps a coverage-reporting problem -- a missing
-      # token, a fork PR without secrets, an upstream outage -- from
-      # reddening a run whose tests are green.
+      # Codecov no longer accepts anonymous uploads -- it rejected ours with
+      # "Token required because branch is protected" (its generic tokenless
+      # refusal; master is not actually a protected branch). Authenticate
+      # over OIDC so no shared secret has to exist: GitHub mints a
+      # short-lived token per run and Codecov verifies it against GitHub's
+      # OIDC provider.
+      #
+      # If a CODECOV_TOKEN secret is ever set, drop use_oidc and pass it as
+      # the token input instead; the two are alternatives, not complements.
+      #
+      # continue-on-error keeps a coverage-reporting problem -- an upstream
+      # outage, a fork PR, a misconfigured Codecov project -- from reddening
+      # a run whose tests are green.
       - name: Upload coverage
         if: ${{ github.repository == 'astrobass/angular-fibonaccispiral' }}
         continue-on-error: true
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage/**/lcov.info
+          use_oidc: true
           fail_ci_if_error: false
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
