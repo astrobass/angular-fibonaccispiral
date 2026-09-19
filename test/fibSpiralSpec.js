@@ -228,6 +228,23 @@ describe('fibonacci spiral directive', function() {
     expect(rects().length).toBe(12);
   });
 
+  it('centres the figure on a canvas that is not golden', function() {
+    render(400, 400);
+    var drawn = rects();
+
+    var left = Math.min.apply(null, drawn.map(function(r) { return r.x; }));
+    var right = Math.max.apply(null, drawn.map(function(r) { return r.x + r.w; }));
+    var top = Math.min.apply(null, drawn.map(function(r) { return r.y; }));
+    var bottom = Math.max.apply(null, drawn.map(function(r) { return r.y + r.h; }));
+
+    // Equal margins on opposing sides.
+    expect(left).toBeCloseTo(400 - right, 6);
+    expect(top).toBeCloseTo(400 - bottom, 6);
+    // A square canvas leaves space above and below, none at the sides.
+    expect(left).toBeCloseTo(0, 6);
+    expect(top).toBeGreaterThan(0);
+  });
+
   it('uses colour channels that are within range', function() {
     render(200, 200);
     rects().forEach(function(rect) {

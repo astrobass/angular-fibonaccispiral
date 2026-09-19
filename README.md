@@ -33,8 +33,11 @@ All three are observed, so the figure is redrawn if they change.
 
 Squares only come out square when the rectangle being subdivided is itself a
 golden rectangle, so the directive inscribes the largest golden rectangle that
-fits the canvas and draws into that. A canvas whose own aspect ratio is close
-to 1.618:1 therefore leaves the least unused space.
+fits the canvas and draws into that, centred.
+
+A canvas that is not itself golden therefore has space left over: a 400x400
+canvas is filled 400x247, with the remainder split evenly above and below. Size
+the canvas to roughly 1.618:1 to use all of it -- `width="400" height="247"`.
 
 ## Development
 

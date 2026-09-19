@@ -30,7 +30,13 @@
 
 	function draw(ctx, width, height, maxTurns) {
 		var rect = goldenRect(width, height);
-		var xl = 0, xr = rect.width, yt = 0, yb = rect.height;
+		// The tiling only fills a golden rectangle, so on a canvas of any other
+		// aspect ratio there is space left over. Centre the figure in it rather
+		// than pinning it to the top-left corner.
+		var offsetX = (width - rect.width) / 2;
+		var offsetY = (height - rect.height) / 2;
+		var xl = offsetX, xr = offsetX + rect.width;
+		var yt = offsetY, yb = offsetY + rect.height;
 		var newWidth, newHeight;
 		// The spiral is one continuous path of quarter arcs, each inscribed in
 		// the square just removed. Every arc starts where the previous one
