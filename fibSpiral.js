@@ -19,13 +19,27 @@
 	// inset by that much to keep the outermost arc off the canvas edge.
 	var LINE_WIDTH = 2;
 
-	// Each turn of the spiral picks a channel; each of its four squares is a
-	// step brighter. Pure, so the caller's iteration order is the only thing
-	// that decides the palette.
+	// A validated categorical order: every adjacent pair clears the
+	// colour-vision-deficiency and normal-vision separation gates (worst
+	// adjacent dE 9.1 CVD, 19.6 normal, OKLab x100). The previous scheme
+	// picked one channel per turn and stepped it by 60, so the four tiles of
+	// a turn were four shades of the same hue and barely told apart.
+	var PALETTE = [
+		'#2a78d6', // blue
+		'#eb6834', // orange
+		'#1baf7a', // aqua
+		'#eda100', // yellow
+		'#e87ba4', // magenta
+		'#008300', // green
+		'#4a3aa7', // violet
+		'#e34948'  // red
+	];
+
+	// Tiles are an ordered geometric sequence rather than data series with
+	// identities to confuse, so the order repeats past eight instead of
+	// folding into an "other" bucket. By then each tile is a few pixels wide.
 	function getColor(turn, step) {
-		var rgb = [0, 0, 0];
-		rgb[turn % 3] = Math.min(255, (step + 1) * 60);
-		return 'rgb(' + rgb.join(',') + ')';
+		return PALETTE[(turn * 4 + step) % PALETTE.length];
 	}
 
 	// The largest golden rectangle that fits width x height. The 1/phi
