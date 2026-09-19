@@ -379,7 +379,7 @@ describe('fibonacci spiral directive', function() {
   var PHI = (1 + Math.sqrt(5)) / 2;
   var ZOOM_PERIOD = Math.pow(PHI, 8);
   var ZOOM_STEP = 1.5;
-  var WHEEL_NOTCH = 100;
+  var WHEEL_NOTCH = 60;
 
   function wheelTo(canvas, factor, deltaMode) {
     var pixels = -Math.log(factor) / Math.log(ZOOM_STEP) * WHEEL_NOTCH;
@@ -388,6 +388,17 @@ describe('fibonacci spiral directive', function() {
     canvas.dispatchEvent(new WheelEvent('wheel', {
       deltaY: pixels / scale,
       deltaMode: deltaMode || 0,
+      bubbles: true,
+      cancelable: true
+    }));
+  }
+
+  // A trackpad pinch: a wheel event carrying ctrlKey, not a touch gesture.
+  function pinchBy(canvas, deltaY) {
+    canvas.dispatchEvent(new WheelEvent('wheel', {
+      deltaY: deltaY,
+      deltaMode: 0,
+      ctrlKey: true,
       bubbles: true,
       cancelable: true
     }));
@@ -449,6 +460,31 @@ describe('fibonacci spiral directive', function() {
           expect(perMode[2]).toBeCloseTo(perMode[0], 6);
           done();
         });
+      });
+    });
+  });
+
+  it('treats a ctrl-wheel as a pinch, not a scroll', function(done) {
+    // A trackpad pinch never fires touch events -- it arrives as a wheel
+    // event with ctrlKey set, and its deltas are far smaller than a
+    // scroll's. Sent through the scroll path, a whole pinch barely moves
+    // the zoom, which is what made pinching feel broken.
+    function zoomAfter(send, then) {
+      var canvas = render(400, 247)[0].querySelector('canvas');
+      calls = [];
+      send(canvas);
+      afterFrame(function() { then(transform().a); });
+    }
+
+    zoomAfter(function(canvas) { pinchBy(canvas, -50); }, function(pinched) {
+      zoomAfter(function(canvas) {
+        canvas.dispatchEvent(new WheelEvent('wheel', {
+          deltaY: -50, deltaMode: 0, bubbles: true, cancelable: true
+        }));
+      }, function(scrolled) {
+        // Identical delta; the pinch has to travel considerably further.
+        expect(pinched).toBeGreaterThan(scrolled * 1.5);
+        done();
       });
     });
   });

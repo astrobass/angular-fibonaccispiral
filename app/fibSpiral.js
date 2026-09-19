@@ -19,10 +19,15 @@
 	// a full self-similar period (phi^8, about 47x) is nine notches away;
 	// stepping by a few percent made descending the spiral a chore.
 	var ZOOM_STEP = 1.5;
-	// A notch is ~100px in pixel mode. Line and page modes report the same
-	// gesture as a much smaller number, so normalise rather than trusting the
-	// raw value -- otherwise a line-mode wheel zooms ~33x slower.
-	var WHEEL_NOTCH = 100;
+	// How much wheel travel makes up one step. A mouse notch is ~100px, but a
+	// trackpad reports a scroll as a stream of much smaller deltas, so a
+	// shorter notch keeps a deliberate two-finger scroll from crawling.
+	var WHEEL_NOTCH = 60;
+	// A trackpad pinch is not a touch gesture: it arrives as a wheel event
+	// with ctrlKey set and deltas smaller still. A whole pinch accumulates
+	// only a couple of hundred pixels, so it needs its own, much shorter
+	// notch or the gesture barely registers.
+	var PINCH_NOTCH = 25;
 	var LINE_HEIGHT = 16;
 	var PAGE_HEIGHT = 800;
 	// The spiral is an overlay stroked on top of the finished tiling, so its
@@ -264,7 +269,11 @@
 
 					iElm.on('wheel', function(event) {
 						event.preventDefault();
-						zoomBy(Math.pow(ZOOM_STEP, -wheelPixels(event) / WHEEL_NOTCH));
+						// ctrlKey on a wheel event means a pinch, not a scroll
+						// with a modifier held -- browsers report trackpad and
+						// touchscreen pinch-zoom this way.
+						var notch = event.ctrlKey ? PINCH_NOTCH : WHEEL_NOTCH;
+						zoomBy(Math.pow(ZOOM_STEP, -wheelPixels(event) / notch));
 					});
 
 					canvas.setAttribute('tabindex', '0');
