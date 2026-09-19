@@ -240,9 +240,52 @@ describe('fibonacci spiral directive', function() {
     // Equal margins on opposing sides.
     expect(left).toBeCloseTo(400 - right, 6);
     expect(top).toBeCloseTo(400 - bottom, 6);
-    // A square canvas leaves space above and below, none at the sides.
-    expect(left).toBeCloseTo(0, 6);
-    expect(top).toBeGreaterThan(0);
+    // A square canvas leaves space above and below; at the sides only the
+    // inset that keeps the spiral stroke inside the canvas.
+    expect(left).toBeCloseTo(1, 6);
+    expect(top).toBeGreaterThan(1);
+  });
+
+  it('leaves room for the spiral stroke at the canvas edge', function() {
+    // The stroke is centred on the path, so half its width falls outside the
+    // tiling. Without an inset the outermost arc is clipped by the canvas.
+    var HALF_STROKE = 1;
+
+    [[400, 400], [400, 247]].forEach(function(size) {
+      calls = [];
+      render(size[0], size[1]);
+
+      rects().forEach(function(rect) {
+        expect(rect.x).not.toBeLessThan(HALF_STROKE);
+        expect(rect.y).not.toBeLessThan(HALF_STROKE);
+        expect(rect.x + rect.w).not.toBeGreaterThan(size[0] - HALF_STROKE);
+        expect(rect.y + rect.h).not.toBeGreaterThan(size[1] - HALF_STROKE);
+      });
+    });
+  });
+
+  it('keeps the whole stroke width inside the canvas', function() {
+    // The rect check above covers the tiles; the arcs reach the tile
+    // boundaries, so check them explicitly. Each arc spans exactly one
+    // quadrant, where cos and sin are both monotonic, so its extremes are its
+    // two endpoints -- not the full circle's bounding box. A stroke is centred
+    // on its path, so the endpoints plus half the stroke must still fit.
+    var HALF_STROKE = 1;
+    var EPSILON = 1e-9;
+
+    [[400, 400], [400, 247], [200, 200]].forEach(function(size) {
+      calls = [];
+      render(size[0], size[1]);
+
+      arcs().forEach(function(arc) {
+        [arcStart(arc), arcEnd(arc)].forEach(function(point) {
+          expect(point.x - HALF_STROKE).not.toBeLessThan(-EPSILON);
+          expect(point.y - HALF_STROKE).not.toBeLessThan(-EPSILON);
+          expect(point.x + HALF_STROKE).not.toBeGreaterThan(size[0] + EPSILON);
+          expect(point.y + HALF_STROKE).not.toBeGreaterThan(size[1] + EPSILON);
+        });
+      });
+    });
   });
 
   it('uses colour channels that are within range', function() {
