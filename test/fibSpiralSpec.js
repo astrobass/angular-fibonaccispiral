@@ -80,6 +80,24 @@ describe('fibonacci spiral directive', function() {
     expect(canvas.height).toBe(200);
   });
 
+  it('gives the canvas an accessible role and name', function() {
+    var element = render(200, 200);
+    var canvas = element[0].querySelector('canvas');
+
+    expect(canvas.getAttribute('role')).toBe('img');
+    expect(canvas.getAttribute('aria-label')).toMatch(/Fibonacci spiral/);
+  });
+
+  it('keeps a caller-supplied aria-label', function() {
+    var element = angular.element(
+      '<div><div fibonacci width="200" height="200" aria-label="Custom description"></div></div>');
+    compile(element)(outerScope);
+    outerScope.$digest();
+
+    expect(element[0].querySelector('canvas').getAttribute('aria-label'))
+      .toBe('Custom description');
+  });
+
   it('draws at least one tile', function() {
     render(200, 200);
     expect(rects().length).toBeGreaterThan(0);

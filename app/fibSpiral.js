@@ -8,6 +8,9 @@
 	// Squares below a pixel render as nothing, so the loop is bounded by canvas
 	// size rather than by a hardcoded iteration count.
 	var MIN_TILE = 1;
+	// A canvas has no text of its own, so assistive technology announces
+	// nothing unless it is given a role and a name.
+	var LABEL = 'A Fibonacci spiral: nested golden-ratio squares, each with a quarter arc inscribed.';
 	// The spiral is stroked along the tile boundaries, and a stroke is centred
 	// on its path, so half of it falls outside the tiling. The drawing area is
 	// inset by that much to keep the outermost arc off the canvas edge.
@@ -100,7 +103,7 @@
 			return {
 				scope: {},
 				restrict: 'A', // E = Element, A = Attribute, C = Class, M = Comment
-				template: '<canvas></canvas>',
+				template: '<canvas role="img"></canvas>',
 				replace: true,
 				link: function($scope, iElm, iAttrs) {
 					var canvas = iElm[0];
@@ -110,6 +113,12 @@
 						// No 2d canvas support, or the template was overridden
 						// with something that is not a canvas.
 						return;
+					}
+
+					// A caller-supplied label wins; replace: true has already
+					// merged any aria-label from the source element by now.
+					if (!canvas.getAttribute('aria-label')) {
+						canvas.setAttribute('aria-label', LABEL);
 					}
 
 					function render() {
