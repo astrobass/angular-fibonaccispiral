@@ -8,12 +8,26 @@ angular.module('fibonacci',[])
 			template: '<canvas></canvas>',
 			replace: true,
 			link: function($scope, iElm, iAttrs, controller) {
+				// 1/phi. Removing a square from a golden rectangle leaves this
+				// fraction of the long side, and the remainder is golden again.
+				var INV_PHI = 2 / (1 + Math.sqrt(5));
 				var r = 0, g = 0, b = 0;
 				var width = iElm[0].width;
 				var height = iElm[0].height;
 				var s = 0;
-				var xl = 0, xr = width, yt = 0, yb = height;
-				var newWidth = width, newHeight = height;
+				// That recursion only holds if the rectangle is already golden, so
+				// subdivide the largest golden rectangle that fits the canvas
+				// rather than the canvas itself.
+				var rectWidth, rectHeight;
+				if (width / height >= 1 / INV_PHI) {
+					rectHeight = height;
+					rectWidth = height / INV_PHI;
+				} else {
+					rectWidth = width;
+					rectHeight = width * INV_PHI;
+				}
+				var xl = 0, xr = rectWidth, yt = 0, yb = rectHeight;
+				var newWidth = rectWidth, newHeight = rectHeight;
 				var ctx = iElm[0].getContext('2d');
 				function getColor(i) {
 					if (i % 3 === 0) {
@@ -29,28 +43,28 @@ angular.module('fibonacci',[])
 				}
 				for (var i=0; i<4; i++) {
 					if (s % 4 === 0) {
-						newWidth = 0.618 * (xr - xl);
+						newWidth = INV_PHI * (xr - xl);
 						ctx.fillStyle = getColor(i);
 						ctx.fillRect(xl, yt, newWidth, yb - yt);
 						xl = xl + newWidth;
 					}
 					s++;
 					if (s % 4 === 1) {
-						newHeight = 0.618 * (yb - yt);
+						newHeight = INV_PHI * (yb - yt);
 						ctx.fillStyle = getColor(i);
 						ctx.fillRect(xl, yt, xr - xl, newHeight);
 						yt = yt + newHeight;
 					}
 					s++;
 					if (s % 4 === 2) {
-						newWidth = 0.618 * (xr - xl);
+						newWidth = INV_PHI * (xr - xl);
 						ctx.fillStyle = getColor(i);
 						ctx.fillRect(xr - newWidth, yt, newWidth, yb - yt);
 						xr = xr - newWidth;
 					}
 					s++;
 					if (s % 4 === 3) {
-						newHeight = 0.618 * (yb - yt);
+						newHeight = INV_PHI * (yb - yt);
 						ctx.fillStyle = getColor(i);
 						ctx.fillRect(xl, yb - newHeight, xr - xl, newHeight);
 						yb = yb - newHeight;

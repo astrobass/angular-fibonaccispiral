@@ -89,6 +89,19 @@ describe('fibonacci spiral directive', function() {
     }
   });
 
+  it('draws square tiles, whatever the canvas aspect ratio', function() {
+    [[200, 200], [300, 150], [120, 400]].forEach(function(size) {
+      calls = [];
+      render(size[0], size[1]);
+
+      rects().forEach(function(rect) {
+        // A Fibonacci tiling removes a square at each step; anything else is
+        // a nested-rectangle spiral, not a golden one.
+        expect(Math.abs(rect.w - rect.h)).toBeLessThan(0.0001);
+      });
+    });
+  });
+
   it('uses colour channels that are within range', function() {
     render(200, 200);
     rects().forEach(function(rect) {
