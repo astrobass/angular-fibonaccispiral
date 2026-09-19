@@ -1,36 +1,103 @@
-  describe("Unit testing fibonacci spiral", function() {
-    var element;
-    var compile;
-    var directiveElement;
-    var outerScope;
-    var innerScope;
+describe('fibonacci spiral directive', function() {
+  var compile;
+  var outerScope;
+  var realGetContext;
+  var calls;
 
-    beforeEach(function() {
-//      angular.mock.module('fibonacci', []);
-      module('fibonacci');
+  // Records every drawing operation the directive performs, so the specs can
+  // assert on the geometry instead of just on the presence of a <canvas> tag.
+  function recordingContext() {
+    var ctx = {
+      fillStyle: null,
+      fillRect: function(x, y, w, h) {
+        calls.push({ op: 'fillRect', x: x, y: y, w: w, h: h, fillStyle: ctx.fillStyle });
+      }
+    };
+    return ctx;
+  }
 
-      inject(function( $compile, $rootScope ) {
-        compile = $compile;
-        outerScope = $rootScope.$new();
-      });
+  beforeEach(function() {
+    module('fibonacci');
 
-      directiveElement = getCompiledElement();
+    inject(function($compile, $rootScope) {
+      compile = $compile;
+      outerScope = $rootScope.$new();
     });
 
-    function getCompiledElement() {
-      element = angular.element('<div><div fibonacci></div></div>');
-      var compiledElement = compile(element)(outerScope);
-      innerScope = element.isolateScope();
-      outerScope.$digest();
-      return compiledElement;
-    }
-
-    it("should be defined", function() {
-      expect(element[0]).toBeDefined();
-    });
-
-    it("should match a canvas tag", function() {
-      expect(element[0].innerHTML).toMatch(/<canvas.*<\/canvas>/);
-    });
-
+    calls = [];
+    realGetContext = window.HTMLCanvasElement.prototype.getContext;
+    window.HTMLCanvasElement.prototype.getContext = recordingContext;
   });
+
+  afterEach(function() {
+    window.HTMLCanvasElement.prototype.getContext = realGetContext;
+  });
+
+  // Compiles the directive on a canvas of the given size and returns the
+  // resulting element. Drawing happens during $digest, so `calls` is populated
+  // by the time this returns.
+  function render(width, height) {
+    var element = angular.element(
+      '<div><div fibonacci width="' + width + '" height="' + height + '"></div></div>');
+    compile(element)(outerScope);
+    outerScope.$digest();
+    return element;
+  }
+
+  function rects() {
+    return calls.filter(function(call) { return call.op === 'fillRect'; });
+  }
+
+  it('replaces the element with a canvas of the requested size', function() {
+    var element = render(200, 200);
+    var canvas = element[0].querySelector('canvas');
+
+    expect(canvas).not.toBeNull();
+    expect(canvas.width).toBe(200);
+    expect(canvas.height).toBe(200);
+  });
+
+  it('draws at least one tile', function() {
+    render(200, 200);
+    expect(rects().length).toBeGreaterThan(0);
+  });
+
+  it('draws only tiles with a positive area', function() {
+    render(200, 200);
+    rects().forEach(function(rect) {
+      expect(rect.w).toBeGreaterThan(0);
+      expect(rect.h).toBeGreaterThan(0);
+    });
+  });
+
+  it('keeps every tile inside the canvas', function() {
+    render(200, 200);
+    rects().forEach(function(rect) {
+      expect(rect.x).not.toBeLessThan(0);
+      expect(rect.y).not.toBeLessThan(0);
+      expect(rect.x + rect.w).not.toBeGreaterThan(200);
+      expect(rect.y + rect.h).not.toBeGreaterThan(200);
+    });
+  });
+
+  it('draws successively smaller tiles', function() {
+    render(200, 200);
+    var areas = rects().map(function(rect) { return rect.w * rect.h; });
+
+    for (var i = 1; i < areas.length; i++) {
+      expect(areas[i]).toBeLessThan(areas[i - 1]);
+    }
+  });
+
+  it('uses colour channels that are within range', function() {
+    render(200, 200);
+    rects().forEach(function(rect) {
+      var channels = /^rgb\((\d+),(\d+),(\d+)\)$/.exec(rect.fillStyle);
+
+      expect(channels).not.toBeNull();
+      for (var i = 1; i <= 3; i++) {
+        expect(Number(channels[i])).not.toBeGreaterThan(255);
+      }
+    });
+  });
+});
