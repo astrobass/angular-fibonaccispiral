@@ -8,6 +8,10 @@
 	// Squares below a pixel render as nothing, so the loop is bounded by canvas
 	// size rather than by a hardcoded iteration count.
 	var MIN_TILE = 1;
+	// The spiral is stroked along the tile boundaries, and a stroke is centred
+	// on its path, so half of it falls outside the tiling. The drawing area is
+	// inset by that much to keep the outermost arc off the canvas edge.
+	var LINE_WIDTH = 2;
 
 	// Each turn of the spiral picks a channel; each of its four squares is a
 	// step brighter. Pure, so the caller's iteration order is the only thing
@@ -29,7 +33,7 @@
 	}
 
 	function draw(ctx, width, height, maxTurns) {
-		var rect = goldenRect(width, height);
+		var rect = goldenRect(width - LINE_WIDTH, height - LINE_WIDTH);
 		// The tiling only fills a golden rectangle, so on a canvas of any other
 		// aspect ratio there is space left over. Centre the figure in it rather
 		// than pinning it to the top-left corner.
@@ -87,7 +91,7 @@
 		}
 
 		ctx.strokeStyle = 'rgb(255,255,255)';
-		ctx.lineWidth = 2;
+		ctx.lineWidth = LINE_WIDTH;
 		ctx.stroke();
 	}
 
