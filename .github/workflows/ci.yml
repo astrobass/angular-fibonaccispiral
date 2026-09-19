@@ -20,7 +20,9 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm install
+      # npm ci installs exactly what package-lock.json pins, and fails if the
+      # lockfile and manifest disagree.
+      - run: npm ci
 
       # Karma launches ChromeHeadlessNoSandbox; the runner ships Chrome, and
       # CHROME_BIN tells karma-chrome-launcher where to find it.

@@ -6,7 +6,13 @@
     <link rel="stylesheet" href="../node_modules/jasmine-core/lib/jasmine-core/jasmine.css">
     <script src="../node_modules/jasmine-core/lib/jasmine-core/jasmine.js"></script>
     <script src="../node_modules/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>
-    <script src="../node_modules/jasmine-core/lib/jasmine-core/boot.js"></script>
+    <!--
+      Jasmine 3+ splits the old boot.js in two: boot0 installs the global
+      interface, boot1 starts the runner. Everything the specs need has to be
+      loaded between them.
+    -->
+    <script src="../node_modules/jasmine-core/lib/jasmine-core/boot0.js"></script>
+
     <script src="../node_modules/angular/angular.js"></script>
     <script src="../node_modules/angular-mocks/angular-mocks.js"></script>
     <script src="../app/fibSpiral.js"></script>
@@ -15,6 +21,8 @@
       exists only to run them in a real browser; do not copy them in here.
     -->
     <script src="fibSpiralSpec.js"></script>
+
+    <script src="../node_modules/jasmine-core/lib/jasmine-core/boot1.js"></script>
   </head>
   <body>
   </body>
