@@ -6,7 +6,9 @@
     <title>Fibonacci Spiral</title>
   </head>
   <body ng-app="myApp">
-    <div fibonacci width="400" height="400"></div>
+    <!-- 400x247 is the closest whole-pixel golden rectangle, so the
+         figure fills the canvas instead of leaving a centred margin. -->
+    <div fibonacci width="400" height="247"></div>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"
             integrity="sha384-quGekMf1ic6tIOn1GgLl0Pzra4ZkFyTcaDW3hZRjORqPQe3HnTKGl+lNPpuh7Lwv"
             crossorigin="anonymous"></script>
